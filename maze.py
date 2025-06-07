@@ -10,7 +10,7 @@ clock = pygame.time.Clock()
 background = pygame.transform.scale(
     pygame.image.load("background.jpg"), SIZE
 )
-
+pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.music.load("jungles.ogg")
 pygame.mixer.music.play()
@@ -34,16 +34,24 @@ class GameSprite(pygame.sprite.Sprite):
         window.blit(self.image, self.rect)
 
 class Player(GameSprite):
-    def update(self):
+    def update(self, walls):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
+
+        x,y = self.rect.x, self.rect.y
+
+        if keys[pygame.K_w] and y >= 0:
             self.rect.y -= self.speed
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] and x <= HEIGHT:
             self.rect.y += self.speed
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] and y <= 0:
             self.rect.x -= self.speed
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] and x <= HEIGHT:
             self.rect.x += self.speed
+
+        for w in walls:
+            if pygame.sprite.collide_rect(w,self):
+                self.rect.x = x
+                self.rect.y = y
 
 
 class Enemy(GameSprite):
@@ -53,6 +61,7 @@ class Enemy(GameSprite):
 
         if self.rect.x>= x2 or self.rect.x <= x1:
             self.speed = -self.speed
+    
 
 
 class Wall(pygame.sprite.Sprite):
@@ -61,12 +70,28 @@ class Wall(pygame.sprite.Sprite):
         self.rect = pygame.Rect(coords, size)
         self.color = color
         self.image.fill(color)
+        
+    def draw(self, window):
+        window.blit(self.image, self.rect)
+
 
 player = Player("hero.png", (10, HEIGHT-130), (80,65), 5)
 enemy = Enemy("cyborg.png", (WIDTH-200, HEIGHT//2), (80,65), 5)
 gold = GameSprite("treasure.png", (WIDTH-200, HEIGHT-130),(50, 40), 0)
 
-test_wall = Wall((100,100), (300,10), (0,255, 125))
+walls = [
+    Wall((100,100), (400,10), (255,110, 100)), 
+    Wall((100,100), (10,400), (255,110, 100)),
+    Wall((500,100), (10,400), (255,110, 100)),
+    Wall((200,180), (10,420), (255,110, 100)),
+    Wall((400,180), (10,420), (255,110, 100)),
+    Wall((500,0), (10,100), (255,110, 100)),
+    Wall((200,180), (200,10), (255,110, 100)),
+    Wall((650,0), (10,500), (255,110, 100)),
+    Wall((800,100), (10,500), (255,110, 100)),
+]   
+
+
 
 run = True 
 finish = False
@@ -81,11 +106,31 @@ while run:
         window.blit(background, (0,0))
 
         player.draw(window)
-        player.update()
+        player.update(walls)
         enemy.draw(window)
         enemy.update(WIDTH//2, WIDTH-10)
         gold.draw(window)
-        test_wall.draw(window)
+
+        for w in walls:
+            w.draw(window)
+            x,y = player.rect.x, player
+            if pygame.sprite.collide_rect(w, player):
+                ...
+        if pygame.sprite.collide_rect(player, enemy):
+            finish = True
+            font = pygame.font.SysFont("Helvetica", 60)
+            text = font.render("ти програв", True, (255,0,0))
+            window.blit(text, (WIDTH//2-100, HEIGHT//2-50))
+            sound = pygame.mixer.Sound("kick.ogg")
+            sound.play()
+
+        if pygame.sprite.collide_rect(player, gold):
+            finish = True
+            font = pygame.font.SysFont("Helvetica", 60)
+            text = font.render("You won ", True, (255,0,0))
+            window.blit(text, (WIDTH//2-100, HEIGHT//2-50))
+            sound = pygame.mixer.Sound("money.ogg")
+            sound.play()
 
 
 
