@@ -17,6 +17,7 @@ pygame.mixer.music.play()
 
 class GameSprite(pygame.sprite.Sprite):
     def __init__(self, filename: str, coords: tuple[int, int], size: tuple [int, int], speed: int ):
+        super().__init__()
         self.image = pygame.transform.scale(
             pygame.image.load(filename), size
         )
@@ -41,11 +42,11 @@ class Player(GameSprite):
 
         if keys[pygame.K_w] and y >= 0:
             self.rect.y -= self.speed
-        if keys[pygame.K_s] and x <= HEIGHT:
+        if keys[pygame.K_s] and y <= HEIGHT - self.rect.height:
             self.rect.y += self.speed
-        if keys[pygame.K_a] and y <= 0:
+        if keys[pygame.K_a] and x >= 0:
             self.rect.x -= self.speed
-        if keys[pygame.K_d] and x <= HEIGHT:
+        if keys[pygame.K_d] and x <= WIDTH - self.rect.width:
             self.rect.x += self.speed
 
         for w in walls:
@@ -61,6 +62,14 @@ class Enemy(GameSprite):
 
         if self.rect.x>= x2 or self.rect.x <= x1:
             self.speed = -self.speed
+        
+    def updatevertical(self, y1, y2):
+
+        self.rect.y += self.speed
+
+        if self.rect.y>= y2 or self.rect.y <= y1:
+            self.speed = -self.speed
+        
     
 
 
@@ -76,10 +85,11 @@ class Wall(pygame.sprite.Sprite):
 
 
 player = Player("hero.png", (10, HEIGHT-130), (80,65), 5)
-enemy = Enemy("cyborg.png", (WIDTH-200, HEIGHT//2), (80,65), 5)
+enemy1 = Enemy("cyborg.png", (WIDTH-200, HEIGHT//2), (80,65), 5)
+enemy2 = Enemy("cyborg.png", (200,0), (80,65), 5)
 gold = GameSprite("treasure.png", (WIDTH-200, HEIGHT-130),(50, 40), 0)
 
-walls = [
+walls1 = [
     Wall((100,100), (400,10), (255,110, 100)), 
     Wall((100,100), (10,400), (255,110, 100)),
     Wall((500,100), (10,400), (255,110, 100)),
@@ -88,10 +98,38 @@ walls = [
     Wall((500,0), (10,100), (255,110, 100)),
     Wall((200,180), (200,10), (255,110, 100)),
     Wall((650,0), (10,500), (255,110, 100)),
-    Wall((800,100), (10,500), (255,110, 100)),
+    Wall((800,100), (10,180), (255,110, 100)),
+    Wall((800,380), (10,220), (255,110, 100)),
+
 ]   
 
+walls2 = [
+    Wall((320,0), (10,400), (130,255,0)),
+    Wall((1090,100), (10,375), (130,255,0)),
+    Wall((930,370), (160,10), (130,255,0)),
+    Wall((930,370), (10,115), (130,255,0)),
+    Wall((600,485), (340,10), (130,255,0)),
+    Wall((600,485), (10,150), (130,255,0)),
+    Wall((960,0), (10,285), (130,255,0)),
+    Wall((835,0), (10,385), (130,255,0)),
+    Wall((600,375), (60,10), (130,255,0)),
+    Wall((760,375), (75,10), (130,255,0)),
+    Wall((600,375), (10,115), (130,255,0)),
+    Wall((650,240), (10,135), (130,255,0)),
+    Wall((550,240), (100,10), (130,255,0)),
+    Wall((650,0), (10,130), (130,255,0)),
+    Wall((650,240), (90,10), (130,255,0)),
+    Wall((740,75), (10,175), (130,255,0)),
+    Wall((440,120), (215,10), (130,255,0)),
+    Wall((440,120), (10,375), (130,255,0)),
 
+]
+
+
+level = 2
+
+walls = walls1
+enemy = enemy1
 
 run = True 
 finish = False
@@ -108,14 +146,11 @@ while run:
         player.draw(window)
         player.update(walls)
         enemy.draw(window)
-        enemy.update(WIDTH//2, WIDTH-10)
+        
         gold.draw(window)
 
         for w in walls:
             w.draw(window)
-            x,y = player.rect.x, player
-            if pygame.sprite.collide_rect(w, player):
-                ...
         if pygame.sprite.collide_rect(player, enemy):
             finish = True
             font = pygame.font.SysFont("Helvetica", 60)
@@ -125,6 +160,22 @@ while run:
             sound.play()
 
         if pygame.sprite.collide_rect(player, gold):
+            level += 1
+
+    
+        if level == 1:
+            walls = walls1
+            enemy = enemy1
+            enemy.update(WIDTH//2, WIDTH-10)
+        elif level == 2:
+            walls = walls2
+            enemy = enemy2
+            enemy.updatevertical(0, HEIGHT//2)
+            gold.rect.x = 20
+            gold.rect.y = 20
+            #player.rect.center = (WIDTH-200, HEIGHT-130)
+
+        if level > 2:
             finish = True
             font = pygame.font.SysFont("Helvetica", 60)
             text = font.render("You won ", True, (255,0,0))
