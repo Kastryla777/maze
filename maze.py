@@ -87,7 +87,7 @@ class Wall(pygame.sprite.Sprite):
 player = Player("hero.png", (10, HEIGHT-130), (80,65), 5)
 enemy1 = Enemy("cyborg.png", (WIDTH-200, HEIGHT//2), (80,65), 5)
 enemy2 = Enemy("cyborg.png", (200,0), (80,65), 5)
-gold = GameSprite("treasure.png", (WIDTH-200, HEIGHT-130),(50, 40), 0)
+gold = GameSprite("treasure.png", (WIDTH-150, HEIGHT-100),(50, 40), 0)
 
 walls1 = [
     Wall((100,100), (400,10), (255,110, 100)), 
@@ -120,13 +120,16 @@ walls2 = [
     Wall((650,0), (10,130), (130,255,0)),
     Wall((650,240), (90,10), (130,255,0)),
     Wall((740,75), (10,175), (130,255,0)),
-    Wall((440,120), (215,10), (130,255,0)),
+    Wall((440,120), (100,10), (130,255,0)),
     Wall((440,120), (10,375), (130,255,0)),
-
+    Wall((175,490), (275,10), (130,255,0)),
+    Wall((175,315), (10,180), (130,255,0)),
+    Wall((175,0), (10,235), (130,255,0)),
+    Wall((0,315), (180,10), (130,255,0)),
 ]
 
 
-level = 2
+level = 1
 
 walls = walls1
 enemy = enemy1
